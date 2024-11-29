@@ -1,84 +1,55 @@
-# Documentation de l'API d'authentification
 
-## Modèle `User`
+# Documentation du Service d'Authentification
+
+## Introduction
+
+Le service d'authentification permet de gérer les utilisateurs dans le système. Il offre des fonctionnalités pour s'inscrire (création de compte) et se connecter (authentification) à l'application. Ce service renvoie un **token JWT** (JSON Web Token) pour authentifier les utilisateurs dans leurs interactions ultérieures avec l'application.
+
+### Fonctionnalités principales
+1. **Inscription** : Permet à un nouvel utilisateur de s'enregistrer en utilisant un e-mail et un mot de passe.
+2. **Connexion** : Permet à un utilisateur existant de se connecter avec son e-mail et mot de passe.
+3. **Token JWT** : Un token sécurisé est généré lors de la connexion ou de l'inscription, permettant à l'utilisateur d'accéder aux fonctionnalités protégées de l'application.
+
+---
+
+## 1. Inscription d'un Nouvel Utilisateur
 
 ### Description
 
-Le modèle `User` est utilisé pour représenter les utilisateurs dans la base de données. Il contient les informations essentielles pour l'inscription et la connexion.
+L'inscription permet à un utilisateur de créer un nouveau compte dans le système en fournissant un e-mail valide et un mot de passe. Un **token JWT** sera généré après une inscription réussie.
 
-### Propriétés du modèle
+### Points importants pour l'inscription
 
-- **email** : L'adresse e-mail de l'utilisateur. Ce champ est unique et ne peut pas être nul.
-  - Type : `STRING`
-  - Validations : 
-    - Doit être un e-mail valide (`isEmail`).
-    - Doit être unique (aucun utilisateur ne peut avoir le même e-mail).
-  - Exemple : `example@example.com`
+- **E-mail** : L'adresse e-mail de l'utilisateur. Elle doit être unique, c'est-à-dire qu'aucun autre utilisateur ne doit avoir le même e-mail.
+- **Mot de passe** : Un mot de passe sécurisé. Le mot de passe sera stocké sous forme hachée pour des raisons de sécurité.
 
-- **password** : Le mot de passe de l'utilisateur, stocké de manière sécurisée après un hachage avec `bcrypt`.
-  - Type : `STRING`
-  - Validation : Ne peut pas être nul.
-  - Exemple : `password123`
+### Requête d'Inscription
 
-### Définition du modèle
+**Méthode HTTP** : `POST`
 
-```javascript
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+**URL** : `/api/auth/signup`
 
-const User = sequelize.define('User', {
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-    validate: {
-      isEmail: true,
-    },
-  },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-});
+**Body de la requête** (exemple) :
 
-module.exports = User;
-```
-
-## Tester l'Inscription (Signup)
-
-### Endpoint
-
-- **URL** : `/api/auth/signup`
-- **Méthode** : `POST`
-- **Description** : Permet de créer un nouvel utilisateur en envoyant son e-mail et son mot de passe.
-- **Request Body** :
-  - `email` : L'e-mail de l'utilisateur.
-  - `password` : Le mot de passe de l'utilisateur.
-
-### Exemple de Requête
-
-```bash
-POST http://localhost:3000/api/auth/signup
-Content-Type: application/json
-
+```json
 {
-  "email": "newuser@example.com",
-  "password": "password123"
+  "email": "nouvelutilisateur@example.com",
+  "password": "motdepassefort"
 }
 ```
 
-### Exemple de Réponse
+### Réponse d'Inscription
 
-Si l'utilisateur est créé avec succès, la réponse renverra un message de succès et un token JWT pour les requêtes suivantes :
+**Réponse réussie** (Utilisateur créé) :
 
 ```json
 {
   "message": "Utilisateur créé avec succès",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY0Nzc0NzMwNywiZXhwIjoxNjQ3NzUwMTA3fQ.abc12345"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTY0Nzc0NzMwNywiZXhwIjoxNjQ3NzUwMTA3fQ.abc12345"
 }
 ```
 
-Si l'e-mail est déjà utilisé par un autre utilisateur, la réponse sera :
+**Réponse d'erreur** (Utilisateur déjà existant) :
 
 ```json
 {
@@ -86,52 +57,50 @@ Si l'e-mail est déjà utilisé par un autre utilisateur, la réponse sera :
 }
 ```
 
-### Tester l'Inscription avec Postman
+### Cas d'erreur courants
 
-1. Ouvrez [Postman](https://www.postman.com/).
-2. Sélectionnez la méthode `POST`.
-3. Entrez l'URL `http://localhost:3000/api/auth/signup`.
-4. Dans l'onglet `Body`, choisissez `raw` et `JSON` comme type de contenu.
-5. Ajoutez les données JSON pour l'e-mail et le mot de passe.
-6. Cliquez sur `Send` pour envoyer la requête.
+- **Utilisateur déjà existant** : Si l'e-mail est déjà enregistré, l'inscription échouera avec un message indiquant que l'utilisateur existe déjà.
 
 ---
 
-## Tester la Connexion (Login)
+## 2. Connexion d'un Utilisateur
 
-### Endpoint
+### Description
 
-- **URL** : `/api/auth/login`
-- **Méthode** : `POST`
-- **Description** : Permet à un utilisateur de se connecter en envoyant son e-mail et son mot de passe.
-- **Request Body** :
-  - `email` : L'e-mail de l'utilisateur.
-  - `password` : Le mot de passe de l'utilisateur.
+La connexion permet à un utilisateur déjà inscrit d'accéder à son compte en utilisant son e-mail et son mot de passe. Un **token JWT** sera généré et renvoyé pour que l'utilisateur puisse accéder aux services protégés.
 
-### Exemple de Requête
+### Points importants pour la connexion
 
-```bash
-POST http://localhost:3000/api/auth/login
-Content-Type: application/json
+- **E-mail** : L'adresse e-mail de l'utilisateur.
+- **Mot de passe** : Le mot de passe de l'utilisateur.
 
+### Requête de Connexion
+
+**Méthode HTTP** : `POST`
+
+**URL** : `/api/auth/login`
+
+**Body de la requête** (exemple) :
+
+```json
 {
-  "email": "newuser@example.com",
-  "password": "password123"
+  "email": "nouvelutilisateur@example.com",
+  "password": "motdepassefort"
 }
 ```
 
-### Exemple de Réponse
+### Réponse de Connexion
 
-Si la connexion est réussie et que les identifiants sont corrects, la réponse renverra un message de succès et un token JWT :
+**Réponse réussie** (Connexion réussie) :
 
 ```json
 {
   "message": "Connexion réussie",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY0Nzc0NzMwNywiZXhwIjoxNjQ3NzUwMTA3fQ.abc12345"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTY0Nzc0NzMwNywiZXhwIjoxNjQ3NzUwMTA3fQ.abc12345"
 }
 ```
 
-Si l'utilisateur ou le mot de passe est incorrect, la réponse sera :
+**Réponse d'erreur** (Identifiants incorrects) :
 
 ```json
 {
@@ -139,33 +108,28 @@ Si l'utilisateur ou le mot de passe est incorrect, la réponse sera :
 }
 ```
 
-### Tester la Connexion avec Postman
+### Cas d'erreur courants
 
-1. Ouvrez [Postman](https://www.postman.com/).
-2. Sélectionnez la méthode `POST`.
-3. Entrez l'URL `http://localhost:3000/api/auth/login`.
-4. Dans l'onglet `Body`, choisissez `raw` et `JSON` comme type de contenu.
-5. Ajoutez les données JSON pour l'e-mail et le mot de passe.
-6. Cliquez sur `Send` pour envoyer la requête.
+- **Identifiants incorrects** : Si l'e-mail ou le mot de passe est incorrect, la connexion échouera avec un message indiquant que les identifiants sont incorrects.
 
 ---
 
-## Gestion des Erreurs
+## 3. Gestion des Erreurs
 
-### Erreurs Courantes
+### Erreurs d'Inscription
 
-- **Utilisateur déjà existant** : Si l'utilisateur tente de s'inscrire avec un e-mail déjà pris, un code d'état `409` (Conflict) sera renvoyé avec le message :
-  ```json
-  { "message": "Utilisateur déjà existant" }
-  ```
+- **Utilisateur déjà existant** : Si l'adresse e-mail est déjà utilisée par un autre utilisateur.
+  - Code d'erreur HTTP : `409 Conflict`
+  - Message : `"Utilisateur déjà existant"`
 
-- **Identifiants incorrects** : Si l'utilisateur entre un e-mail ou un mot de passe incorrect lors de la connexion, un code d'état `401` (Unauthorized) sera renvoyé avec le message :
-  ```json
-  { "message": "Identifiants incorrects" }
-  ```
+### Erreurs de Connexion
+
+- **Identifiants incorrects** : Si l'e-mail ou le mot de passe est incorrect.
+  - Code d'erreur HTTP : `401 Unauthorized`
+  - Message : `"Identifiants incorrects"`
 
 ---
 
 ## Conclusion
 
-Cette API d'authentification gère les opérations de base liées à la gestion des utilisateurs, y compris l'inscription, la connexion et l'authentification via JWT. Les étapes de test avec **Postman** permettent de vérifier rapidement son bon fonctionnement.
+Cette API permet de gérer facilement les utilisateurs via des fonctionnalités de **création de compte (inscription)** et **connexion**. Le processus d'authentification est sécurisé avec des tokens JWT, garantissant un accès sécurisé aux ressources protégées de l'application.
