@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: frontend
+  namespace: garage-manager
+spec:
+  host: frontend
+  subsets:
+    - name: blue
+      labels:
+        version: blue
+    - name: canary
+      labels:
+        version: canary

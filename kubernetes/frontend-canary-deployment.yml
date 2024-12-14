@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-canary
+  namespace: garage-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: frontend
+        version: canary
+    spec:
+      containers:
+        - name: frontend
+          image: garage-manager-frontend:v2.0  # Image de la nouvelle version (Canary)
+          ports:
+            - containerPort: 3000
