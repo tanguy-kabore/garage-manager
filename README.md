@@ -12,7 +12,7 @@ Avant de commencer, assurez-vous d'avoir les outils suivants installés sur votr
 
 ### Créer l'image Docker
 
-Pour créer les images Docker à partir des fichiers `docker-compose.yml` :
+Pour créer les images Docker à partir des fichiers `docker-compose.yaml` :
 
 ```bash
 docker-compose up --build
@@ -60,10 +60,10 @@ minikube dashboard
 
 ### Déployer sur Kubernetes
 
-Pour déployer les ressources Kubernetes définies dans le fichier `deployment.yml` (assurez-vous que le fichier est bien configuré avec les bonnes ressources) :
+Pour déployer les ressources Kubernetes définies dans le fichier `deployment.yaml` (assurez-vous que le fichier est bien configuré avec les bonnes ressources) :
 
 ```bash
-kubectl apply -f .\deployment.yml
+kubectl apply -f .\deployment.yaml
 ```
 
 ### Vérifier les ressources déployées
