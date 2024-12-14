@@ -12,11 +12,15 @@
 
 require('module-alias/register');
 const express = require('express');
+const cors = require('cors');
 const maintenanceRoutes = require('@routes/maintenanceRoutes');
 const errorHandler = require('@utils/errorHandler');
 const { specs, swaggerUi } = require('@src/swagger');
 
 const app = express();
+
+// Configuration de CORS
+app.use(cors()); // Autorise toutes les origines par défaut
 
 // Middleware pour parser le JSON
 app.use(express.json());

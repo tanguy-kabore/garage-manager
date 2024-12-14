@@ -1,52 +1,49 @@
-const { fetchData } = require('@utils/fetchHelper');
+const axios = require('axios');
 const { sendEmail } = require('@services/emailService');
 
 /**
  * Envoie des notifications de maintenance à l'utilisateur et au mécanicien.
  * 
- * Cette fonction récupère les informations du véhicule, du propriétaire et du mécanicien
- * associés à une tâche de maintenance. Ensuite, elle envoie des emails de notification au 
- * propriétaire du véhicule et au mécanicien, selon le type d'événement (`created`, `completed`, ou `cancelled`).
- * 
- * Si l'événement est `completed`, l'email contient également le montant de la maintenance.
- * 
- * @param {Object} maintenance - Objet contenant les détails de la tâche de maintenance. Doit inclure les champs `vehicle_id`, `mechanic_id`, `start_date`, `end_date`, `description`, et `montant` (pour l'événement `completed`).
+ * @param {Object} maintenance - Objet contenant les détails de la tâche de maintenance.
  * @param {string} event - L'événement lié à la maintenance (`created`, `completed`, ou `cancelled`).
  * 
  * @throws {Error} Si une erreur survient lors de la récupération des données ou de l'envoi des emails.
- * 
- * @example
- * sendMaintenanceNotification({
- *   vehicle_id: '12345',
- *   mechanic_id: '67890',
- *   start_date: '2024-12-05',
- *   end_date: '2024-12-10',
- *   description: 'Engine repair',
- *   montant: 150 // uniquement pour l'événement 'completed'
- * }, 'created');
  */
+
 async function sendMaintenanceNotification(maintenance, event) {
   console.log(`Sending ${event} notification for maintenance:`, maintenance);
 
   const vehicleUrl = `${process.env.VEHICLE_API_URL}/${maintenance.vehicle_id}`;
-  const mechanicUrl = `${process.env.USER_API_URL}/${maintenance.mechanic_id}`;
+  const mechanicUrl = maintenance.mechanic_id
+    ? `${process.env.USER_API_URL}/${maintenance.mechanic_id}`
+    : null;
 
   try {
     // Récupérer les informations du véhicule
-    const vehicleData = await fetchData(vehicleUrl);
-    const { marque, modele, annee, proprietaire_id: ownerId } = vehicleData.data;
+    const vehicleResponse = await axios.get(vehicleUrl);
+    const vehicleData = vehicleResponse.data.vehicule;
 
+    if (!vehicleData) {
+      throw new Error('Vehicle data not found.');
+    }
+
+    const { marque, modele, annee, proprietaire_id: ownerId } = vehicleData;
     if (!ownerId) {
       console.warn('No owner found for the vehicle.');
       return;
     }
 
     // Récupérer les informations du propriétaire
-    const ownerUrl = `${process.env.USER_API_URL}/${ownerId}`;
-    const ownerData = await fetchData(ownerUrl);
+    const ownerResponse = await axios.get(`${process.env.USER_API_URL}/${ownerId}`);
+    const ownerData = ownerResponse.data.user;
+
+    if (!ownerData) {
+      throw new Error('Owner data not found.');
+    }
+
     const ownerFullName = `${ownerData.firstName} ${ownerData.lastName}`;
 
-    // Personnaliser l'email en fonction de l'événement
+    // Préparer l'email en fonction de l'événement
     let emailSubject = '';
     let emailContent = '';
 
@@ -58,7 +55,7 @@ async function sendMaintenanceNotification(maintenance, event) {
 
       case 'completed':
         emailSubject = 'Maintenance Completed';
-        emailContent = `Hello ${ownerFullName},\n\nThe maintenance task for your vehicle (${marque} ${modele}, ${annee}) has been successfully completed. The total cost of the maintenance is ${maintenance.montant} XOF.\n\nThank you for your cooperation.\n\nBest regards,\nMaintenance Team`;
+        emailContent = `Hello ${ownerFullName},\n\nThe maintenance task for your vehicle (${marque} ${modele}, ${annee}) has been successfully completed. The total cost of the maintenance is ${maintenance.amount} XOF.\n\nThank you for your cooperation.\n\nBest regards,\nMaintenance Team`;
         break;
 
       case 'cancelled':
@@ -66,26 +63,38 @@ async function sendMaintenanceNotification(maintenance, event) {
         emailContent = `Hello ${ownerFullName},\n\nWe regret to inform you that the scheduled maintenance for your vehicle (${marque} ${modele}, ${annee}) has been cancelled. Please contact us for further assistance.\n\nBest regards,\nMaintenance Team`;
         break;
 
+      case 'confirmed':
+        emailSubject = 'Maintenance Confirmed';
+        emailContent = `Hello ${ownerFullName},\n\nWe are happy to inform you that the scheduled maintenance for your vehicle (${marque} ${modele}, ${annee}) has been confirmed. Please contact us for further assistance.\n\nBest regards,\nMaintenance Team`;
+        break;
+
       default:
         console.warn(`Unrecognized event type: '${event}'. No notification sent.`);
         return;
     }
 
-    // Envoyer un email au propriétaire du véhicule
+    // Envoyer un email au propriétaire
     await sendEmail(ownerData.email, emailSubject, emailContent);
     console.log(`Notification email sent to vehicle owner (${ownerData.email}).`);
 
-    // Récupérer les informations du mécanicien
-    const mechanicData = await fetchData(mechanicUrl);
-    const mechanicFullName = `${mechanicData.firstName} ${mechanicData.lastName}`;
+    // Envoyer un email au mécanicien si l'événement est "confirmed"
+    if (event === 'confirmed' && mechanicUrl) {
+      const mechanicResponse = await axios.get(mechanicUrl);
+      const mechanicData = mechanicResponse.data.user;
 
-    if (event === 'created') {
-      // Envoyer un email d'affectation au mécanicien pour les nouveaux événements
+      if (!mechanicData) {
+        throw new Error('Mechanic data not found.');
+      }
+
+      const mechanicFullName = `${mechanicData.firstName} ${mechanicData.lastName}`;
+      const mechanicEmailContent = `Hello ${mechanicFullName},\n\nYou have been assigned to a maintenance task (ID: ${maintenance.id}) for the vehicle (${marque} ${modele}, ${annee}). The maintenance period is from ${maintenance.start_date} to ${maintenance.end_date}. Description: ${maintenance.description}\n\nBest regards,\nMaintenance Team`;
+
       await sendEmail(
         mechanicData.email,
-        `Maintenance Assignment - ${event}`,
-        `Hello ${mechanicFullName},\n\nYou have been assigned to a maintenance task (ID: ${maintenance.id}) for the vehicle (${marque} ${modele}, ${annee}). The maintenance period is from ${maintenance.start_date} to ${maintenance.end_date}. Description: ${maintenance.description}\n\nBest regards,\nMaintenance Team`
+        `Maintenance Assignment - Confirmed`,
+        mechanicEmailContent
       );
+
       console.log(`Assignment email sent to mechanic (${mechanicData.email}).`);
     }
   } catch (error) {

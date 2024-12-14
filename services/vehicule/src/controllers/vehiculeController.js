@@ -21,40 +21,6 @@
 const axios = require('axios');
 const Vehicule = require('@models/vehicule');
 
-// Helper pour gérer les réponses
-const responseHelper = {
-  /**
-   * Envoie une réponse de succès au client.
-   *
-   * @param {Object} res - L'objet de réponse Express.
-   * @param {Object} data - Les données à envoyer dans la réponse.
-   * @param {string} message - Le message de succès.
-   * @returns {Object} - La réponse au client avec un statut 200.
-   */
-  sendSuccess: (res, data, message) => {
-    return res.status(200).json({
-      success: true,
-      message,
-      data,
-    });
-  },
-
-  /**
-   * Envoie une réponse d'erreur au client.
-   *
-   * @param {Object} res - L'objet de réponse Express.
-   * @param {string} message - Le message d'erreur.
-   * @param {number} statusCode - Le code de statut HTTP à envoyer.
-   * @returns {Object} - La réponse d'erreur au client.
-   */
-  sendError: (res, message, statusCode) => {
-    return res.status(statusCode).json({
-      success: false,
-      message,
-    });
-  },
-};
-
 /**
  * Créer un véhicule.
  *
@@ -73,7 +39,7 @@ exports.createVehicule = async (req, res) => {
 
     // Vérification si le propriétaire est un client via l'API du microservice User
     if (!proprietaire_id) {
-      return responseHelper.sendError(res, 'Le propriétaire du véhicule est requis', 400);
+      return res.status(400).json({ success: false, message: 'Le propriétaire du véhicule est requis' });
     }
 
     // Vérification de l'existence du propriétaire dans le microservice User
@@ -82,12 +48,12 @@ exports.createVehicule = async (req, res) => {
       userResponse = await axios.get(`${userServiceUrl}/${proprietaire_id}`);
     } catch (error) {
       console.error('Erreur lors de la vérification du propriétaire:', error);
-      return responseHelper.sendError(res, 'Erreur de communication avec le microservice Utilisateur', 500);
+      return res.status(500).json({ success: false, message: 'Erreur de communication avec le microservice Utilisateur' });
     }
 
     // Vérifier si l'utilisateur existe dans la réponse
-    if (!userResponse.data || !userResponse.data.id) {
-      return responseHelper.sendError(res, 'Le propriétaire n\'existe pas', 404);
+    if (!userResponse.data.user || !userResponse.data.user.id) {
+      return res.status(404).json({ success: false, message: 'Le propriétaire n\'existe pas' });
     }
 
     // Créer le véhicule si le propriétaire existe
@@ -101,13 +67,13 @@ exports.createVehicule = async (req, res) => {
     });
 
     // Réponse de succès
-    return responseHelper.sendSuccess(res, newVehicule, 'Véhicule créé avec succès');
+    return res.status(201).json({ success: true, message: 'Véhicule créé avec succès', vehicule: newVehicule });
   } catch (error) {
     console.error('Erreur lors de la création du véhicule:', error);
     if (error.response && error.response.status === 404) {
-      return responseHelper.sendError(res, 'Le propriétaire n\'existe pas', 404);
+      return res.status(404).json({ success: false, message: 'Le propriétaire n\'existe pas' });
     }
-    return responseHelper.sendError(res, 'Erreur lors de la création du véhicule', 500);
+    return res.status(500).json({ success: false, message: 'Erreur lors de la création du véhicule' });
   }
 };
 
@@ -128,14 +94,14 @@ exports.listVehicules = async (req, res) => {
 
     // Vérifier si des véhicules existent
     if (vehicules.length === 0) {
-      return responseHelper.sendError(res, 'Aucun véhicule trouvé', 404);
+      return res.status(404).json({ success: false, message: 'Aucun véhicule trouvé' });
     }
 
     // Réponse de succès avec la liste des véhicules
-    return responseHelper.sendSuccess(res, vehicules, 'Liste des véhicules récupérée avec succès');
+    return res.status(200).json({ success: true, message: 'Liste des véhicules récupérée avec succès', vehicules: vehicules });
   } catch (error) {
     console.error('Erreur lors de la récupération des véhicules:', error);
-    return responseHelper.sendError(res, 'Erreur lors de la récupération des véhicules', 500);
+    return res.status(500).json({ success: false, message: 'Erreur lors de la récupération des véhicules' });
   }
 };
 
@@ -155,7 +121,7 @@ exports.getVehicule = async (req, res) => {
 
     // Vérification de l'ID du véhicule
     if (!id) {
-      return responseHelper.sendError(res, 'L\'ID du véhicule est requis', 400);
+      return res.status(400).json({ success: false, message: 'L\'ID du véhicule est requis' });
     }
 
     // Recherche du véhicule par son ID
@@ -163,14 +129,14 @@ exports.getVehicule = async (req, res) => {
 
     // Vérifier si le véhicule existe
     if (!vehicule) {
-      return responseHelper.sendError(res, 'Aucun véhicule trouvé avec cet ID', 404);
+      return res.status(404).json({ success: false, message: 'Aucun véhicule trouvé avec cet ID' });
     }
 
     // Réponse de succès avec le véhicule trouvé
-    return responseHelper.sendSuccess(res, vehicule, 'Véhicule récupéré avec succès');
+    return res.status(200).json({ success: true, message: 'Véhicule récupéré avec succès', vehicule: vehicule });
   } catch (error) {
     console.error('Erreur lors de la récupération du véhicule:', error);
-    return responseHelper.sendError(res, 'Erreur lors de la récupération du véhicule', 500);
+    return res.status(500).json({ success: false, message: 'Erreur lors de la récupération du véhicule' });
   }
 };
 
@@ -191,7 +157,7 @@ exports.updateVehicule = async (req, res) => {
 
     const vehicule = await Vehicule.findByPk(id);
     if (!vehicule) {
-      return responseHelper.sendError(res, 'Véhicule non trouvé', 404);
+      return res.status(404).json({ success: false, message: 'Véhicule non trouvé' });
     }
 
     // Mettre à jour le véhicule
@@ -203,10 +169,10 @@ exports.updateVehicule = async (req, res) => {
       kilometrage,
     });
 
-    return responseHelper.sendSuccess(res, vehicule, 'Véhicule mis à jour avec succès');
+    return res.status(200).json({ success: true, message: 'Véhicule mis à jour avec succès', vehicule: vehicule });
   } catch (error) {
     console.error('Erreur lors de la mise à jour du véhicule:', error);
-    return responseHelper.sendError(res, 'Erreur lors de la mise à jour du véhicule', 500);
+    return res.status(500).json({ success: false, message: 'Erreur lors de la mise à jour du véhicule' });
   }
 };
 
@@ -226,14 +192,14 @@ exports.deleteVehicule = async (req, res) => {
 
     const vehicule = await Vehicule.findByPk(id);
     if (!vehicule) {
-      return responseHelper.sendError(res, 'Véhicule non trouvé', 404);
+      return res.status(404).json({ success: false, message: 'Véhicule non trouvé' });
     }
 
     await vehicule.destroy();
 
-    return responseHelper.sendSuccess(res, null, 'Véhicule supprimé avec succès');
+    return res.status(200).json({ success: true, message: 'Véhicule supprimé avec succès', vehicule: vehicule });
   } catch (error) {
     console.error('Erreur lors de la suppression du véhicule:', error);
-    return responseHelper.sendError(res, 'Erreur lors de la suppression du véhicule', 500);
+    return res.status(500).json({ success: false, message: 'Erreur lors de la suppression du véhicule' });
   }
 };

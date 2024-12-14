@@ -54,6 +54,12 @@ async function runConsumer() {
               console.log('Notification envoyée pour la création de maintenance.');
               break;
 
+            case 'confirmed':
+              console.log(`Maintenance confirmée :`, event.maintenance);
+              await sendMaintenanceNotification(event.maintenance, 'confirmed');
+              console.log('Notification envoyée pour la maintenance confirmée.');
+              break;
+
             case 'completed':
               console.log(`Maintenance terminée :`, event.maintenance);
               await sendMaintenanceNotification(event.maintenance, 'completed');
@@ -82,3 +88,4 @@ async function runConsumer() {
 }
 
 module.exports = { runConsumer };
+

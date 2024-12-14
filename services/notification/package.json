@@ -28,7 +28,6 @@
     "@config": "src/config",
     "@consumers": "src/consumers",
     "@services": "src/services",
-    "@routes": "src/routes",
-    "@utils": "src/utils"
+    "@routes": "src/routes"
   }
 }

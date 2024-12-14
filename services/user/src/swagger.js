@@ -33,6 +33,44 @@ const options = {
         description: 'Serveur de développement local',
       },
     ],
+    components: {
+      schemas: {
+        User: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'integer',
+            },
+            firstName: {
+              type: 'string',
+            },
+            lastName: {
+              type: 'string',
+            },
+            address: {
+              type: 'string',
+              nullable: true,
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+            },
+            role: {
+              type: 'string',
+              enum: ['client', 'mecanicien'],
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+            },
+          },
+        },
+      },
+    },
   },
   apis: ['./src/routes/*.js'], // Chemin vers les fichiers contenant les routes annotées
 };

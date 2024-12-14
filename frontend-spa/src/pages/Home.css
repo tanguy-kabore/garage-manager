@@ -1,0 +1,33 @@
+.home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+    padding-top: 80px; /* Ajustez cette valeur à la hauteur de la navbar */
+    background: linear-gradient(120deg, #34495e, #2c3e50);
+    color: #ecf0f1;
+  }
+  
+  .home-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #f39c12;
+  }
+  
+  .home-description {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    max-width: 600px;
+  }
+  
+  .home-animation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+  }
+  

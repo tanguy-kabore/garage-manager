@@ -1,0 +1,73 @@
+/* Conteneur du formulaire */
+.login-container {
+    display: flex;
+    flex-direction: column;  /* Disposition verticale (titre au-dessus du formulaire) */
+    justify-content: center; /* Centrer verticalement */
+    align-items: center;     /* Centrer horizontalement */
+    height: 100vh;           /* Prendre toute la hauteur de la fenêtre */
+    background-color: #f4f7fa;
+    padding: 20px;
+  }
+  
+  h2 {
+    text-align: center;      /* Centrer le texte du titre */
+    font-size: 32px;
+    color: #333;
+    margin: 0 0 20px 0;      /* Ajouter de l'espace uniquement en bas du titre */
+  }
+  
+  /* Formulaire de connexion */
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;         /* Limiter la largeur du formulaire */
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Champs de saisie */
+  .input-field {
+    padding: 10px 15px;      /* Ajout de padding pour espacer l'input des bords */
+    margin-bottom: 15px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;             /* S'assurer que les champs prennent toute la largeur disponible */
+    box-sizing: border-box;  /* Pour inclure les bordures et le padding dans la largeur totale */
+  }
+  
+  .input-field:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  .register-redirect p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+    padding-top: 20px;
+  }
+  
+  .register-link {
+    color: #2c3e50; /* Couleur du lien */
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+  }
+  
+  .register-link:hover {
+    color: #34495e; /* Couleur au survol */
+  }
+  
+  /* Message d'erreur */
+  .error-message {
+    color: #d9534f;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 10px;
+  }
+  

@@ -10,8 +10,8 @@
  *       properties:
  *         event:
  *           type: string
- *           description: Type de l'événement (created, completed, cancelled).
- *           example: created
+ *           description: Type de l'événement (created, confirmed, completed, cancelled).
+ *           example: confirmed
  *         maintenance:
  *           type: object
  *           required:
@@ -43,7 +43,7 @@
  *               type: string
  *               description: Description détaillée de la maintenance.
  *               example: 'Engine repair'
- *             montant:
+ *             amount:
  *               type: number
  *               format: float
  *               description: Montant de la maintenance (uniquement pour l'événement `completed`).
@@ -80,6 +80,18 @@
  *
  * @example
  * sendMaintenanceNotification({
+ *   event: 'confirmed',
+ *   maintenance: {
+ *     vehicle_id: '12345',
+ *     mechanic_id: '67890',
+ *     start_date: '2024-12-05T10:00:00Z',
+ *     end_date: '2024-12-10T15:00:00Z',
+ *     description: 'Engine repair'
+ *   }
+ * }, 'confirmed');
+ *
+ * @example
+ * sendMaintenanceNotification({
  *   event: 'completed',
  *   maintenance: {
  *     vehicle_id: '12345',
@@ -87,7 +99,7 @@
  *     start_date: '2024-12-05T10:00:00Z',
  *     end_date: '2024-12-10T15:00:00Z',
  *     description: 'Engine repair',
- *     montant: 150
+ *     amount: 150
  *   }
  * }, 'completed');
  *

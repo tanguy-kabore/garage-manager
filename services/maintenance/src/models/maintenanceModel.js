@@ -56,7 +56,7 @@ const Maintenance = sequelize.define('Maintenance', {
   },
   mechanic_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true, // Rend le champ optionnel
     // Cette clé fait référence à l'ID dans le microservice Mechanic
   },
   amount: {
@@ -75,7 +75,7 @@ const Maintenance = sequelize.define('Maintenance', {
  * Synchronisation du modèle avec la base de données.
  *
  * Cette méthode crée ou met à jour la table `maintenances` dans la base de données
- * pour qu'elle corresponde à la définition du modèle, y compris l'ajout du champ `amount`.
+ * pour qu'elle corresponde à la définition du modèle.
  */
 Maintenance.sync({ alter: true }).then(() => {
   console.log('La table "maintenances" a été créée ou mise à jour');

@@ -1,0 +1,34 @@
+/* Conteneur du formulaire */
+.signup-container {
+    display: flex;
+    flex-direction: column;
+    /* Disposition verticale (titre au-dessus du formulaire) */
+    justify-content: center;
+    /* Centrer verticalement */
+    align-items: center;
+    /* Centrer horizontalement */
+    height: 100vh;
+    /* Prendre toute la hauteur de la fenêtre */
+    background-color: #f4f7fa;
+    padding: 20px;
+}
+
+h2 {
+    text-align: center;
+    /* Centrer le texte du titre */
+    font-size: 32px;
+    color: #333;
+    margin: 0 0 20px 0;
+    /* Ajouter de l'espace uniquement en bas du titre */
+}
+
+/* Formulaire de connexion */
+.signup-form {
+    width: 100%;
+    max-width: 600px;
+    /* Limiter la largeur du formulaire */
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

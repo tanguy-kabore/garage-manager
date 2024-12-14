@@ -1,0 +1,166 @@
+version: '3.8'
+
+services:
+  user-service:
+    build:
+      context: ./services/user
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - DB_NAME=garage_user
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_HOST=localhost
+      - DB_DIALECT=mysql
+    depends_on:
+      - db
+
+  auth-service:
+    build:
+      context: ./services/authentification
+      dockerfile: Dockerfile
+    ports:
+      - "4001:4001"
+    environment:
+      - DB_NAME=garage_auth
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_HOST=localhost
+      - DB_DIALECT=mysql
+      - USER_SERVICE_URL=http://user-service:4000/api/users
+      - JWT_SECRET_KEY=mE9+BL18O7i3H743g6Got5eJFqCxwKi1OxYoMkuyNVs=
+    depends_on:
+      - db
+      - user-service
+
+  vehicule-service:
+    build:
+      context: ./services/vehicule
+      dockerfile: Dockerfile
+    ports:
+      - "4002:4002"
+    environment:
+      - DB_NAME=garage_vehicule
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_HOST=localhost
+      - DB_DIALECT=mysql
+      - USER_SERVICE_URL=http://user-service:4000/api/users
+    depends_on:
+      - db
+      - user-service
+
+  maintenance-service:
+    build:
+      context: ./services/maintenance
+      dockerfile: Dockerfile
+    ports:
+      - "4003:4003"
+    environment:
+      - DB_NAME=garage_maintenance
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_HOST=localhost
+      - DB_DIALECT=mysql
+      - KAFKA_BROKER=kafka:9092
+      - KAFKA_TOPIC=maintenance-events
+      - API_USERS_URL=http://user-service:4000/api/users
+      - API_VEHICLES_URL=http://vehicule-service:4002/api/vehicules
+    depends_on:
+      - db
+      - user-service
+      - vehicule-service
+      - kafka
+
+  notification-service:
+    build:
+      context: ./services/notification
+      dockerfile: Dockerfile
+    ports:
+      - "4004:4004"
+    environment:
+      - EMAIL_SERVICE=sandbox.api.mailtrap.io
+      - EMAIL_PORT=587
+      - EMAIL_TOKEN=fa981feed898b17aba30c98e674e0da9
+      - EMAIL_TEST_INBOX=3320229
+      - EMAIL_SENDER=tanguykabore@yahoo.fr
+      - KAFKA_BROKER=kafka:9092
+      - REDIS_URL=redis://redis:6379
+      - VEHICLE_API_URL=http://vehicule-service:4002/api/vehicules
+      - USER_API_URL=http://user-service:4000/api/users
+    depends_on:
+      - kafka
+      - redis
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - USER_SERVICE_URL=http://user-service:4000/api/users
+      - AUTH_SERVICE_URL=http://auth-service:4001/api/auth
+      - VEHICULE_SERVICE_URL=http://vehicule-service:4002/api/vehicules
+      - MAINTENANCE_SERVICE_URL=http://maintenance-service:4003/api/maintenances
+      - JWT_SECRET_KEY=mE9+BL18O7i3H743g6Got5eJFqCxwKi1OxYoMkuyNVs=
+    depends_on:
+      - user-service
+      - auth-service
+      - vehicule-service
+      - maintenance-service
+
+  frontend:
+    build:
+      context: ./frontend-spa
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_AUTH_API_URL=http://api-gateway:5000/auth
+      - REACT_APP_USER_API_URL=http://api-gateway:5000/users
+      - REACT_APP_VEHICULE_API_URL=http://api-gateway:5000/vehicules
+      - REACT_APP_MAINTENANCE_API_URL=http://api-gateway:5000/maintenances
+      - REACT_APP_API_BASE_URL=http://api-gateway:5000
+    depends_on:
+      - api-gateway
+
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db-data:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+    depends_on:
+      - zookeeper
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+volumes:
+  db-data:

@@ -1,0 +1,58 @@
+/* Conteneur principal */
+.view-vehicule-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Titre */
+.view-vehicule-container h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+/* Grille pour les détails */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Détails individuels */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.form-group p {
+  font-size: 1rem;
+  color: #333;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin: 0;
+  text-align: left;
+}
+
+/* Champ d'erreur */
+.error-message {
+  grid-column: 1 / 3;
+  /* Occupe toute la largeur */
+  color: #dc3545;
+  font-weight: bold;
+  text-align: center;
+}

@@ -15,7 +15,7 @@
  * - `axios` pour appeler le service utilisateur et récupérer les informations de l'utilisateur.
  * - `bcrypt` pour comparer le mot de passe hashé de l'utilisateur.
  */
- 
+
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 require('dotenv').config();
@@ -37,6 +37,9 @@ let blacklistedTokens = [];
  */
 exports.login = async (req, res) => {
   try {
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+
     const { email, password } = req.body;
 
     // Utiliser l'URL du service utilisateur depuis les variables d'environnement
@@ -44,7 +47,7 @@ exports.login = async (req, res) => {
 
     // Appeler le service User pour récupérer l'utilisateur
     const userResponse = await axios.get(`${userServiceUrl}/${email}`);
-    const user = userResponse.data;
+    const user = userResponse.data.user;
 
     if (!user) {
       return res.status(401).json({ message: 'Identifiants incorrects' });
@@ -60,7 +63,7 @@ exports.login = async (req, res) => {
 
     // Générer un token JWT
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-    res.status(200).json({ message: 'Connexion réussie', token });
+    res.status(200).json({ message: 'Connexion réussie', token: token, user: user });
   } catch (error) {
     console.error('Erreur lors de la connexion :', error);
     res.status(500).json({ message: 'Erreur lors de la connexion' });
@@ -79,14 +82,14 @@ exports.login = async (req, res) => {
  */
 exports.logout = (req, res) => {
   const token = req.headers['authorization']?.split(' ')[1]; // Récupérer le token depuis l'en-tête Authorization
-  
+
   if (!token) {
     return res.status(400).json({ message: 'Aucun token fourni' });
   }
 
   // Ajouter le token à la liste noire pour le rendre invalide
   blacklistedTokens.push(token);
-  
+
   // Répondre que la déconnexion a réussi
   res.status(200).json({ message: 'Déconnexion réussie' });
 };
@@ -101,10 +104,10 @@ exports.logout = (req, res) => {
  */
 exports.verifyTokenNotBlacklisted = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1]; // Récupérer le token depuis l'en-tête Authorization
-  
+
   if (blacklistedTokens.includes(token)) {
     return res.status(403).json({ message: 'Token invalide, veuillez vous reconnecter.' });
   }
-  
+
   next();
 };

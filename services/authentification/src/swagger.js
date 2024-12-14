@@ -34,6 +34,52 @@ const options = {
         description: 'Serveur de développement local',
       },
     ],
+    components: {
+      schemas: {
+        User: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'integer',
+              description: 'Identifiant unique de l\'utilisateur',
+            },
+            firstName: {
+              type: 'string',
+              description: 'Prénom de l\'utilisateur',
+            },
+            lastName: {
+              type: 'string',
+              description: 'Nom de famille de l\'utilisateur',
+            },
+            address: {
+              type: 'string',
+              description: 'Adresse de l\'utilisateur',
+              nullable: true,
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Adresse e-mail de l\'utilisateur',
+            },
+            role: {
+              type: 'string',
+              enum: ['client', 'mecanicien'],
+              description: 'Rôle de l\'utilisateur',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Date de création du compte utilisateur',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Date de la dernière mise à jour du compte utilisateur',
+            },
+          },
+        },
+      },
+    },
   },
   apis: ['./src/routes/*.js'], // Chemin vers les fichiers contenant les routes annotées
 };

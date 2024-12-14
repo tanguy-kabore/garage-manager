@@ -37,9 +37,9 @@ exports.createUser = async (req, res) => {
     }
 
     // Vérification des rôles
-    if (!['client', 'mecanicien'].includes(role)) {
+    /*if (!['client', 'mecanicien'].includes(role)) {
       return res.status(400).json({ message: 'Rôle invalide. Utilisez "client" ou "mecanicien".' });
-    }
+    }*/
 
     // Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -72,7 +72,7 @@ exports.createUser = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll();
-    res.status(200).json(users);
+    res.status(200).json({ message: 'Utilisateurs récupérés avec succès', users: users });
   } catch (error) {
     console.error('Erreur lors de la récupération des utilisateurs :', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });
@@ -100,7 +100,7 @@ exports.getUser = async (req, res) => {
       return res.status(404).json({ message: 'Utilisateur non trouvé' });
     }
 
-    res.status(200).json(user);
+    res.status(200).json({ message: 'Utilisateur récupéré avec succès', user: user });
   } catch (error) {
     console.error('Erreur lors de la récupération de l\'utilisateur :', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });
@@ -137,7 +137,7 @@ exports.updateUser = async (req, res) => {
     user.role = role || user.role;
 
     await user.save();
-    res.status(200).json({ message: 'Utilisateur mis à jour avec succès', user });
+    res.status(200).json({ message: 'Utilisateur mis à jour avec succès', user: user });
   } catch (error) {
     console.error('Erreur lors de la mise à jour de l\'utilisateur :', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });
@@ -160,7 +160,7 @@ exports.deleteUser = async (req, res) => {
     }
 
     await user.destroy();
-    res.status(200).json({ message: 'Utilisateur supprimé avec succès' });
+    res.status(200).json({ message: 'Utilisateur supprimé avec succès', user: user });
   } catch (error) {
     console.error('Erreur lors de la suppression de l\'utilisateur :', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });

@@ -51,10 +51,11 @@ const User = sequelize.define('User', {
         allowNull: false, // Champ obligatoire
     },
     role: {
-        type: DataTypes.ENUM('client', 'mecanicien'), // Rôles possibles
-        allowNull: false, // Champ obligatoire
+        type: DataTypes.ENUM('client', 'mecanicien', 'admin'), // Rôles possibles
+        defaultValue: 'client',
+        //allowNull: false, // Champ obligatoire
         validate: {
-            isIn: [['client', 'mecanicien']], // Validation des valeurs possibles
+            isIn: [['client', 'mecanicien', 'admin']], // Validation des valeurs possibles
         },
     },
 }, {

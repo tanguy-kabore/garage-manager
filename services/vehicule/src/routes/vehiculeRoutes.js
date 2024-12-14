@@ -4,22 +4,6 @@ const vehiculeController = require('../controllers/vehiculeController');
 const router = express.Router();
 
 /**
- * Routes pour la gestion des véhicules.
- *
- * Ce fichier contient les routes pour effectuer différentes opérations sur les véhicules dans le système. 
- * Chaque route correspond à une action spécifique qui utilise un contrôleur pour interagir avec la base de données 
- * et gérer les données des véhicules. Les opérations disponibles sont la création, la récupération, la mise à jour, 
- * la suppression et la récupération de la liste de tous les véhicules.
- *
- * Routes disponibles :
- * - POST `/` : Créer un nouveau véhicule.
- * - GET `/` : Lister tous les véhicules.
- * - GET `/ :id` : Récupérer un véhicule par son ID.
- * - PUT `/ :id` : Mettre à jour un véhicule par son ID.
- * - DELETE `/ :id` : Supprimer un véhicule par son ID.
- */
-
-/**
  * Fichier de routage pour la gestion des véhicules.
  *
  * Ce fichier définit les routes HTTP pour les opérations CRUD sur les véhicules.
@@ -39,46 +23,89 @@ const router = express.Router();
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     Vehicule:
+ *       type: object
+ *       required:
+ *         - marque
+ *         - modele
+ *         - annee
+ *         - num_immatriculation
+ *         - kilometrage
+ *         - proprietaire_id
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID unique du véhicule
+ *         marque:
+ *           type: string
+ *           description: Marque du véhicule
+ *         modele:
+ *           type: string
+ *           description: Modèle du véhicule
+ *         annee:
+ *           type: integer
+ *           description: Année de fabrication du véhicule
+ *         num_immatriculation:
+ *           type: string
+ *           description: Numéro d'immatriculation unique du véhicule
+ *         kilometrage:
+ *           type: integer
+ *           description: Kilométrage du véhicule
+ *         proprietaire_id:
+ *           type: integer
+ *           description: ID du propriétaire du véhicule
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Date de création de l'enregistrement
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Date de dernière mise à jour de l'enregistrement
+ *       example:
+ *         id: 1
+ *         marque: Toyota
+ *         modele: Corolla
+ *         annee: 2021
+ *         num_immatriculation: ABC-2021
+ *         kilometrage: 25000
+ *         proprietaire_id: 1
+ *         createdAt: 2024-12-06T00:12:30.000Z
+ *         updatedAt: 2024-12-08T00:54:17.000Z
+ */
+
+/**
+ * @swagger
  * /vehicules:
  *   post:
- *     summary: Créer un véhicule
- *     description: Permet de créer un nouveau véhicule en fournissant les informations nécessaires.
- *     tags:
- *       - Véhicules
+ *     summary: Créer un nouveau véhicule
+ *     tags: [Vehicules]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               marque:
- *                 type: string
- *                 description: La marque du véhicule.
- *                 example: "Toyota"
- *               modele:
- *                 type: string
- *                 description: Le modèle du véhicule.
- *                 example: "Corolla"
- *               annee:
- *                 type: integer
- *                 description: L'année de fabrication du véhicule.
- *                 example: 2022
- *               immatriculation:
- *                 type: string
- *                 description: Numéro d'immatriculation unique.
- *                 example: "AB-123-CD"
- *               proprietaire:
- *                 type: string
- *                 description: ID du propriétaire du véhicule.
- *                 example: "1"
+ *             $ref: '#/components/schemas/Vehicule'
  *     responses:
  *       201:
- *         description: Véhicule créé avec succès.
+ *         description: Véhicule créé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 vehicule:
+ *                   $ref: '#/components/schemas/Vehicule'
  *       400:
- *         description: Données invalides fournies.
+ *         description: Données invalides
  *       500:
- *         description: Erreur interne du serveur.
+ *         description: Erreur serveur
  */
 router.post('/', vehiculeController.createVehicule);
 
@@ -87,20 +114,27 @@ router.post('/', vehiculeController.createVehicule);
  * /vehicules:
  *   get:
  *     summary: Lister tous les véhicules
- *     description: Permet de récupérer la liste de tous les véhicules enregistrés.
- *     tags:
- *       - Véhicules
+ *     tags: [Vehicules]
  *     responses:
  *       200:
- *         description: Liste des véhicules récupérée avec succès.
+ *         description: Liste des véhicules récupérée avec succès
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Vehicule'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 vehicules:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Vehicule'
+ *       404:
+ *         description: Aucun véhicule trouvé
  *       500:
- *         description: Erreur interne du serveur.
+ *         description: Erreur serveur
  */
 router.get('/', vehiculeController.listVehicules);
 
@@ -108,24 +142,33 @@ router.get('/', vehiculeController.listVehicules);
  * @swagger
  * /vehicules/{id}:
  *   get:
- *     summary: Récupérer un véhicule par son ID
- *     description: Permet de récupérer les détails d'un véhicule spécifique via son ID.
- *     tags:
- *       - Véhicules
+ *     summary: Obtenir un véhicule spécifique par son ID
+ *     tags: [Vehicules]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID unique du véhicule.
+ *         description: ID du véhicule
  *     responses:
  *       200:
- *         description: Détails du véhicule récupérés avec succès.
+ *         description: Véhicule récupéré avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 vehicule:
+ *                   $ref: '#/components/schemas/Vehicule'
  *       404:
- *         description: Véhicule non trouvé.
+ *         description: Véhicule non trouvé
  *       500:
- *         description: Erreur interne du serveur.
+ *         description: Erreur serveur
  */
 router.get('/:id', vehiculeController.getVehicule);
 
@@ -133,48 +176,28 @@ router.get('/:id', vehiculeController.getVehicule);
  * @swagger
  * /vehicules/{id}:
  *   put:
- *     summary: Mettre à jour un véhicule
- *     description: Permet de mettre à jour les informations d'un véhicule par son ID.
- *     tags:
- *       - Véhicules
+ *     summary: Mettre à jour un véhicule par son ID
+ *     tags: [Vehicules]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID unique du véhicule.
+ *         description: ID du véhicule
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               marque:
- *                 type: string
- *                 description: Nouvelle marque du véhicule.
- *               modele:
- *                 type: string
- *                 description: Nouveau modèle du véhicule.
- *               annee:
- *                 type: integer
- *                 description: Nouvelle année de fabrication.
- *               immatriculation:
- *                 type: string
- *                 description: Nouveau numéro d'immatriculation.
- *               proprietaire:
- *                 type: string
- *                 description: Nouveau ID du propriétaire.
+ *             $ref: '#/components/schemas/Vehicule'
  *     responses:
  *       200:
- *         description: Véhicule mis à jour avec succès.
- *       400:
- *         description: Données invalides fournies.
+ *         description: Véhicule mis à jour avec succès
  *       404:
- *         description: Véhicule non trouvé.
+ *         description: Véhicule non trouvé
  *       500:
- *         description: Erreur interne du serveur.
+ *         description: Erreur serveur
  */
 router.put('/:id', vehiculeController.updateVehicule);
 
@@ -182,24 +205,22 @@ router.put('/:id', vehiculeController.updateVehicule);
  * @swagger
  * /vehicules/{id}:
  *   delete:
- *     summary: Supprimer un véhicule
- *     description: Permet de supprimer un véhicule par son ID.
- *     tags:
- *       - Véhicules
+ *     summary: Supprimer un véhicule par son ID
+ *     tags: [Vehicules]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID unique du véhicule.
+ *         description: ID du véhicule
  *     responses:
  *       200:
- *         description: Véhicule supprimé avec succès.
+ *         description: Véhicule supprimé avec succès
  *       404:
- *         description: Véhicule non trouvé.
+ *         description: Véhicule non trouvé
  *       500:
- *         description: Erreur interne du serveur.
+ *         description: Erreur serveur
  */
 router.delete('/:id', vehiculeController.deleteVehicule);
 
